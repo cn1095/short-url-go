@@ -1783,11 +1783,11 @@ func queryIPWithNali(ip string) string {
 	// 将字节切换为字符串
 	result := string(out)
 
-	// 去除两端的方括号
-	if strings.HasPrefix(result, "[") && strings.HasSuffix(result, "]") {
-		result = strings.TrimPrefix(result, "[")
-		result = strings.TrimSuffix(result, "]")
-	}
+	// 查找并去掉中括号
+	// 使用 strings.Replace 去掉中括号，不影响其中内容
+	result = strings.Replace(result, "[", "", -1) // 去掉所有的左中括号
+	result = strings.Replace(result, "]", "", -1) // 去掉所有的右中括号
+	
 	fmt.Println(result)
 	return result
 }
@@ -1930,6 +1930,14 @@ func main() {
 		ipInfo = queryIPWithNali(clientIP)
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 		w.Write([]byte(ipInfo))
+        } else if id == "ipsvg" {
+            // 如果 id 是 svg，查询地区信息并返回
+		// 声明 ipInfo 变量
+		var ipInfo string
+		svgContent = queryIPWithNali(clientIP)
+		w.Header().Set("Content-Type", "image/svg+xml")
+           	w.Header().Set("Cache-Control", "no-cache")
+           	w.Write([]byte(svgContent))
         } else if id == "" {  
         // 处理主页
         indexHandler(w, r)
