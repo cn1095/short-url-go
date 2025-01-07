@@ -1724,6 +1724,58 @@ func generateSVG(clientIP string) string {
     return svgContent
 }
 
+// 检查并获取 nali 可执行文件的路径
+func getNaliPath() string {
+	// 获取当前程序目录
+	dir, err := os.Getwd()
+	if err != nil {
+		log.Println("无法获取当前目录:", err)
+		return ""
+	}
+
+	// nali 文件路径
+	naliPath := fmt.Sprintf("%s/nali", dir)
+
+	// 检查文件是否存在
+	if _, err := os.Stat(naliPath); os.IsNotExist(err) {
+		log.Println("nali 不存在")
+		return ""
+	}
+
+	// 检查文件是否可执行
+	info, err := os.Stat(naliPath)
+	if err != nil || (info.Mode()&0111) == 0 {
+		// 如果没有执行权限，尝试赋予执行权限
+		err := os.Chmod(naliPath, 0755)
+		if err != nil {
+			log.Println("赋予执行权限失败:", err)
+			return ""
+		}
+		log.Println("成功赋予执行权限")
+	}
+
+	return naliPath
+}
+
+// 使用 nali 查询 IP 地理信息
+func queryIPWithNali(ip string) string {
+	naliPath := getNaliPath()
+	if naliPath == "" {
+		return ip // 如果没有 nali 或无法执行，则直接返回 IP
+	}
+
+	// 调用 nali 命令查询 IP 地理信息
+	cmd := exec.Command(naliPath, ip)
+	out, err := cmd.Output()
+	if err != nil {
+		// 如果查询失败，记录日志并返回 IP 地址
+		log.Println("查询 IP 地理信息失败:", err)
+		return ip
+	}
+
+	return fmt.Sprintf("%s - %s", ip, string(out))
+}
+
 func main() {
     
     var (
@@ -1856,9 +1908,8 @@ func main() {
             w.Header().Set("Cache-Control", "no-cache")
             w.Write([]byte(svgContent))
         } else if id == "ip" {
-            // 如果id是ip，直接返回IP地址
-            w.Header().Set("Content-Type", "text/plain")
-            w.Write([]byte(clientIP))
+            // 如果 id 是 ip，查询地区信息并返回
+	    ipInfo := queryIPWithNali(clientIP)
         } else if id == "" {  
         // 处理主页
         indexHandler(w, r)
