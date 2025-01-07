@@ -1694,7 +1694,7 @@ func generateSVG(clientIP string) string {
     // 如果IP中包含中文字符，则设置每个字符宽度为 3px，否则为 5px
 	var charWidth int
 	if containsChinese(clientIP) {
-		charWidth = 3
+		charWidth = 4
 	} else {
 		charWidth = 5
 	}
