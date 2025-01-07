@@ -1731,7 +1731,7 @@ func getNaliPath() string {
 	execPath, err := os.Executable()
 	if err != nil {
 		log.Println("无法获取当前目录:", err)
-		return
+		return ""
 	}
 
 	// 获取程序所在目录
@@ -1746,7 +1746,7 @@ func getNaliPath() string {
 	// 检查 nali 文件是否存在
 	if _, err := os.Stat(naliPath); os.IsNotExist(err) {
 		log.Println("nali 不存在")
-		return
+		return ""
 	}
 
 	// 检查文件是否可执行
