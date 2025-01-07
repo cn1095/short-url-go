@@ -1798,7 +1798,7 @@ func queryIPWithNali(ip string) string {
 	result := string(out)
 
 	// 转换编码格式（如果需要转换）
-	decodedResult, err := convertEncoding(result)
+	decodedResult, err := convertGBKToUTF8(result)
 	if err != nil {
 		log.Println("编码转换失败:", err)
 		return ip
