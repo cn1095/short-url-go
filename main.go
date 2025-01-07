@@ -1917,12 +1917,16 @@ func main() {
         // 获取请求的id参数
         id := r.URL.Query().Get("id")
 
-        if id == "svg" {
-            // 如果id是svg，生成SVG图像并返回
-            svgContent := generateSVG(clientIP)
-            w.Header().Set("Content-Type", "image/svg+xml")
-            w.Header().Set("Cache-Control", "no-cache")
-            w.Write([]byte(svgContent))
+        if id == "ip.svg" {
+            	// 如果 id 是 svg，查询地区信息并返回
+		// 声明 ipInfo 变量
+		var ipInfo string
+		var svgContent string
+		ipInfo = queryIPWithNali(clientIP)
+		svgContent = generateSVG(ipInfo)
+		w.Header().Set("Content-Type", "image/svg+xml")
+           	w.Header().Set("Cache-Control", "no-cache")
+           	w.Write([]byte(svgContent))
         } else if id == "ip" {
             // 如果 id 是 ip，查询地区信息并返回
 		// 声明 ipInfo 变量
@@ -1930,16 +1934,6 @@ func main() {
 		ipInfo = queryIPWithNali(clientIP)
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 		w.Write([]byte(ipInfo))
-        } else if id == "ipsvg" {
-            // 如果 id 是 svg，查询地区信息并返回
-		// 声明 ipInfo 变量
-		var ipInfo string
-		var svgContent string
-		ipInfo = queryIPWithNali(clientIP)
-		svgContent = queryIPWithNali(ipInfo)
-		w.Header().Set("Content-Type", "image/svg+xml")
-           	w.Header().Set("Cache-Control", "no-cache")
-           	w.Write([]byte(svgContent))
         } else if id == "" {  
         // 处理主页
         indexHandler(w, r)
