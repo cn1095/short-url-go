@@ -1730,9 +1730,10 @@ func getNaliPath() string {
 	// 获取当前程序目录
 	dir, err := os.Getwd()
 	if err != nil {
-		log.Println("无法获取当前目录:", err)
-		return ""
-	}
+    log.Println("无法获取当前目录:", err)
+} else {
+    log.Println("当前目录:", dir)
+}}
 
 	// nali 文件路径
 	naliPath := fmt.Sprintf("%s/nali", dir)
