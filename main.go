@@ -1926,7 +1926,7 @@ func main() {
         } else if id == "ip" {
             // 如果 id 是 ip，查询地区信息并返回
 		// 声明 ipInfo 变量
-			var ipInfo string
+		var ipInfo string
 		ipInfo = queryIPWithNali(clientIP)
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 		w.Write([]byte(ipInfo))
@@ -1934,6 +1934,7 @@ func main() {
             // 如果 id 是 svg，查询地区信息并返回
 		// 声明 ipInfo 变量
 		var ipInfo string
+		var svgContent string
 		ipInfo = queryIPWithNali(clientIP)
 		svgContent = queryIPWithNali(ipInfo)
 		w.Header().Set("Content-Type", "image/svg+xml")
