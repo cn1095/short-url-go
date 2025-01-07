@@ -23,8 +23,6 @@ import (
     "sync"
     "io"
     "github.com/natefinch/lumberjack"
-    "golang.org/x/text/encoding/simplifiedchinese"
-    "golang.org/x/text/transform"
 )
 
 //go:embed static/*
@@ -1766,18 +1764,6 @@ func getNaliPath() string {
 	return naliPath
 }
 
-// 转换 GBK 编码为 UTF-8
-func convertGBKToUTF8(input string) (string, error) {
-	// 使用 simplifiedchinese.GBK.NewDecoder() 来进行 GBK 转 UTF-8 转换
-	decoder := simplifiedchinese.GBK.NewDecoder()
-	decodedReader := transform.NewReader(strings.NewReader(input), decoder)
-	decodedBytes, err := ioutil.ReadAll(decodedReader)
-	if err != nil {
-		return "", err
-	}
-	return string(decodedBytes), nil
-}
-
 // 使用 nali 查询 IP 地理信息
 func queryIPWithNali(ip string) string {
 	naliPath := getNaliPath()
@@ -1797,15 +1783,9 @@ func queryIPWithNali(ip string) string {
 	// 将字节切换为字符串
 	result := string(out)
 	fmt.Println(result)
-	// 转换编码格式（如果需要转换）
-	decodedResult, err := convertGBKToUTF8(result)
-	if err != nil {
-		log.Println("编码转换失败:", err)
-		return ip
-	}
 
 	// 去除返回字符串中的方括号
-	decodedResult = strings.Trim(decodedResult, "[]")
+	decodedResult = strings.Trim(result, "[]")
 	fmt.Println(decodedResult)
 	// 返回处理后的地理信息
 	return decodedResult
