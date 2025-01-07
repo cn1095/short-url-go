@@ -1782,12 +1782,13 @@ func queryIPWithNali(ip string) string {
 
 	// 将字节切换为字符串
 	result := string(out)
-	fmt.Println(result)
 
-	// 去除返回字符串中的方括号
-	result = strings.Trim(result, "[]")
+	// 去除两端的方括号
+	if strings.HasPrefix(result, "[") && strings.HasSuffix(result, "]") {
+		result = strings.TrimPrefix(result, "[")
+		result = strings.TrimSuffix(result, "]")
+	}
 	fmt.Println(result)
-	// 返回处理后的地理信息
 	return result
 }
 
@@ -1927,7 +1928,7 @@ func main() {
 		// 声明 ipInfo 变量
 			var ipInfo string
 		ipInfo = queryIPWithNali(clientIP)
-		w.Header().Set("Content-Type", "text/plain")
+		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 		w.Write([]byte(ipInfo))
         } else if id == "" {  
         // 处理主页
