@@ -22,7 +22,6 @@ import (
     "html/template"
     "sync"
     "io"
-    "unicode"
     "github.com/natefinch/lumberjack"
 )
 
