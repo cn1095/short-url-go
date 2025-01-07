@@ -1785,10 +1785,10 @@ func queryIPWithNali(ip string) string {
 	fmt.Println(result)
 
 	// 去除返回字符串中的方括号
-	decodedResult = strings.Trim(result, "[]")
-	fmt.Println(decodedResult)
+	result = strings.Trim(result, "[]")
+	fmt.Println(result)
 	// 返回处理后的地理信息
-	return decodedResult
+	return result
 }
 
 func main() {
