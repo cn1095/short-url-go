@@ -1727,22 +1727,26 @@ func generateSVG(clientIP string) string {
 
 // 检查并获取 nali 可执行文件的路径
 func getNaliPath() string {
-	// 获取当前程序目录
+	// 获取当前程序的二进制文件路径
 	execPath, err := os.Executable()
 	if err != nil {
-    log.Println("无法获取当前目录:", err)
-} else {
-    log.Println("当前目录:", dir)
-}
+		log.Println("无法获取当前目录:", err)
+		return
+	}
+
 	// 获取程序所在目录
 	dir := filepath.Dir(execPath)
-	// nali 文件路径
+
+	// 打印当前目录
+	log.Println("当前目录:", dir)
+
+	// 构造 nali 文件路径
 	naliPath := fmt.Sprintf("%s/nali", dir)
 
-	// 检查文件是否存在
+	// 检查 nali 文件是否存在
 	if _, err := os.Stat(naliPath); os.IsNotExist(err) {
 		log.Println("nali 不存在")
-		return ""
+		return
 	}
 
 	// 检查文件是否可执行
