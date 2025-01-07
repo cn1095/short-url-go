@@ -22,8 +22,8 @@ import (
     "html/template"
     "sync"
     "io"
+    "unicode"
     "github.com/natefinch/lumberjack"
-    "github.com/ajstarks/svgo"
 )
 
 //go:embed static/*
@@ -1679,45 +1679,60 @@ func getIP(r *http.Request) string {
     return clientIP
 }
 
+// 判断字符串中是否包含中文字符
+func containsChinese(s string) bool {
+	for _, r := range s {
+		if unicode.Is(unicode.Han, r) { // 判断字符是否为中文
+			return true
+		}
+	}
+	return false
+}
+
 // 生成SVG内容
 func generateSVG(clientIP string) string {
-	// 创建一个新的SVG画布
-	width := 500
-	height := 20
-	canvas := svg.New(os.Stdout)
-
-	// 设置字体大小
-	fontSize := 12
-
-	// 计算文本宽度
-	textWidth := canvas.TextWidth(clientIP, fontSize)
-
-	// 右边矩形宽度比文本宽度多一些，保证有适当的间隔
-	rectWidth := textWidth + 30 // 右边矩形的宽度
-
-	// 左边矩形宽度为固定值
-	leftRectWidth := 30
-
-	// 确保宽度是计算出来的矩形总宽度
-	totalWidth := leftRectWidth + rectWidth
-
-	// 创建 SVG 内容
-	canvas.Start(width, height)
-
-	// 左边矩形
-	canvas.Path(fmt.Sprintf("M3 0 h%d v20 h-%d a3 3 0 0 1 -3 -3 v-14 a3 3 0 0 1 3 -3 z", leftRectWidth, leftRectWidth), "fill:#515151")
-
-	// 右边矩形
-	canvas.Path(fmt.Sprintf("M%d 0 h%d a3 3 0 0 1 3 3 v14 a3 3 0 0 1 -3 3 h-%d v-20 z", leftRectWidth, rectWidth, rectWidth), "fill:#95c10d")
-
-	// 添加文本
-	canvas.Text(leftRectWidth+10, height/2, clientIP, fmt.Sprintf("font-size:%dpx; fill:#ffffff", fontSize))
-
-	// 结束SVG
-	canvas.End()
-
-	// 返回SVG内容
-	return fmt.Sprintf("Text width: %d, Total width: %d", textWidth, totalWidth)
+    // 如果IP中包含中文字符，则设置每个字符宽度为 3px，否则为 5px
+	var charWidth int
+	if containsChinese(clientIP) {
+		charWidth = 3
+	} else {
+		charWidth = 5
+	}
+    
+    // 计算文本宽度，不能在常量表达式中使用len(clientIP)
+    textWidth := len(clientIP) * charWidth  // 计算文本宽度
+    // 右边矩形宽度比文本宽度多一些，保证有适当的间隔
+    rectWidth := textWidth + 30 // 右边矩形的宽度
+    // 调整左边矩形的宽度，使其比原来小一些
+    leftRectWidth := 30 // 左边矩形宽度减少至 30（你可以根据实际需求调整）
+    // 确保宽度是计算出来的矩形总宽度
+    totalWidth := leftRectWidth + rectWidth
+    svgContent := fmt.Sprintf(`
+<svg xmlns="http://www.w3.org/2000/svg" width="%d" height="20">
+    <!-- 左边固定部分：背景 #515151，宽度调整为 leftRectWidth，包含左侧小圆角 -->
+    <path d="
+        M3 0 
+        h%d 
+        v20 
+        h-%d 
+        a3 3 0 0 1 -3 -3 
+        v-14 
+        a3 3 0 0 1 3 -3 
+        z" fill="#515151" />
+    <text x="10" y="15" font-size="12" fill="#ffffff">IP</text>
+    <!-- 右边动态部分：背景 #95c10d -->
+    <path d="
+        M%d 0 
+        h%d 
+        a3 3 0 0 1 3 3 
+        v14 
+        a3 3 0 0 1 -3 3 
+        h-%d 
+        v-20 
+        z" fill="#95c10d" />
+    <text x="%d" y="15" font-size="12" fill="#ffffff">%s</text>
+</svg>`, totalWidth, leftRectWidth-3, leftRectWidth-3, leftRectWidth, rectWidth-3, rectWidth-3, leftRectWidth+10, clientIP)
+    return svgContent
 }
 
 // 检查并获取 nali 可执行文件的路径
