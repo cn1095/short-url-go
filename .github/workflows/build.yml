@@ -89,7 +89,6 @@ jobs:
       - name: 开始编译
         run: |
             sudo timedatectl set-timezone "Asia/Shanghai"
-            go get shortener
             export CGO_ENABLED=0
             export GOOS=$GOos
             export GOARCH=$GOarch
