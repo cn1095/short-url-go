@@ -1733,7 +1733,7 @@ func getNaliPath() string {
     log.Println("无法获取当前目录:", err)
 } else {
     log.Println("当前目录:", dir)
-}}
+}
 
 	// nali 文件路径
 	naliPath := fmt.Sprintf("%s/nali", dir)
