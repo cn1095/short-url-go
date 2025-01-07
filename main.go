@@ -1910,9 +1910,11 @@ func main() {
             w.Write([]byte(svgContent))
         } else if id == "ip" {
             // 如果 id 是 ip，查询地区信息并返回
-				ipInfo = queryIPWithNali(clientIP)
-				w.Header().Set("Content-Type", "text/plain")
-				w.Write([]byte(ipInfo))
+		// 声明 ipInfo 变量
+			var ipInfo string
+		ipInfo = queryIPWithNali(clientIP)
+		w.Header().Set("Content-Type", "text/plain")
+		w.Write([]byte(ipInfo))
         } else if id == "" {  
         // 处理主页
         indexHandler(w, r)
