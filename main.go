@@ -1796,7 +1796,7 @@ func queryIPWithNali(ip string) string {
 
 	// 将字节切换为字符串
 	result := string(out)
-
+	fmt.Println(result)
 	// 转换编码格式（如果需要转换）
 	decodedResult, err := convertGBKToUTF8(result)
 	if err != nil {
@@ -1806,7 +1806,7 @@ func queryIPWithNali(ip string) string {
 
 	// 去除返回字符串中的方括号
 	decodedResult = strings.Trim(decodedResult, "[]")
-
+	fmt.Println(decodedResult)
 	// 返回处理后的地理信息
 	return decodedResult
 }
