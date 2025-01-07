@@ -1932,8 +1932,8 @@ func main() {
 		w.Write([]byte(ipInfo))
         } else if id == "ipsvg" {
             // 如果 id 是 svg，查询地区信息并返回
-		// 声明 ipInfo 变量
-		var ipInfo string
+		// 声明 svgContent 变量
+		var svgContent string
 		svgContent = queryIPWithNali(clientIP)
 		w.Header().Set("Content-Type", "image/svg+xml")
            	w.Header().Set("Cache-Control", "no-cache")
