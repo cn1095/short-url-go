@@ -1678,16 +1678,6 @@ func getIP(r *http.Request) string {
     return clientIP
 }
 
-// 判断字符串中是否包含中文字符
-func containsChinese(s string) bool {
-	for _, r := range s {
-		if unicode.Is(unicode.Han, r) { // 判断字符是否为中文
-			return true
-		}
-	}
-	return false
-}
-
 // 生成SVG内容
 func generateSVG(clientIP string) string {
     // 使用估算值，每个字符宽度为 5px（你可以根据实际需求调整）
