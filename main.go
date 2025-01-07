@@ -1691,22 +1691,21 @@ func containsChinese(s string) bool {
 
 // 生成SVG内容
 func generateSVG(clientIP string) string {
-    // 如果IP中包含中文字符，则设置每个字符宽度为 3px，否则为 5px
-	var charWidth int
-	if containsChinese(clientIP) {
-		charWidth = 4
-	} else {
-		charWidth = 5
-	}
+    // 使用估算值，每个字符宽度为 5px（你可以根据实际需求调整）
+    const charWidth = 5
     
     // 计算文本宽度，不能在常量表达式中使用len(clientIP)
     textWidth := len(clientIP) * charWidth  // 计算文本宽度
+
     // 右边矩形宽度比文本宽度多一些，保证有适当的间隔
     rectWidth := textWidth + 40 // 右边矩形的宽度
+
     // 调整左边矩形的宽度，使其比原来小一些
     leftRectWidth := 30 // 左边矩形宽度减少至 30（你可以根据实际需求调整）
+
     // 确保宽度是计算出来的矩形总宽度
     totalWidth := leftRectWidth + rectWidth
+	
     svgContent := fmt.Sprintf(`
 <svg xmlns="http://www.w3.org/2000/svg" width="%d" height="20">
     <!-- 左边固定部分：背景 #515151，宽度调整为 leftRectWidth，包含左侧小圆角 -->
