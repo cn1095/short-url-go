@@ -2157,6 +2157,11 @@ func main() {
         // 处理/api
         apiHandler(w, r, dataDir)
     } else if r.URL.Path == "/" {
+	    fmt.Println("请求方法:", r.Method)            // 请求方法 (GET, POST等)
+    fmt.Println("请求URL:", r.URL)               // 请求的URL路径
+    fmt.Println("请求头部:", r.Header)           // 请求的所有头部信息
+    fmt.Println("查询参数:", r.URL.Query()) 
+	    fmt.Println("请求Referer:", r.Header.Get("Referer"))
         // 获取客户端的IP地址
         clientIP := getIP(r)
         
