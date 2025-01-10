@@ -2010,14 +2010,12 @@ func main() {
         email   string
         username   string
         password   string
-        tcDir string
     )
 
     // 使用flag包解析命令行参数
     flag.IntVar(&port, "p", 8080, "监听端口")
     flag.StringVar(&dataDir, "d", "", "指定数据存放目录路径")
     flag.StringVar(&dbDir, "db", "", "指定IP地址离线数据存放目录路径")
-    flag.StringVar(&tcDir, "counter", "", "指定网页访问计数器数据存放目录路径")
     flag.StringVar(&logDir, "log", "", "指定日志目录路径")
     flag.StringVar(&username, "u", "admin", "指定管理页面账户名")
     flag.StringVar(&password, "w", "admin", "指定管理页面密码")
@@ -2051,11 +2049,6 @@ func main() {
 	colorPrint(36, fmt.Sprintf("-db "))
 	colorPrint(34, fmt.Sprintf("[文件路径]"))
 	fmt.Println(" 指定IP地址离线数据存放的目录路径，默认/tmp文件夹")
-
-	fmt.Printf("  %s ", os.Args[0])
-	colorPrint(36, fmt.Sprintf("-counter "))
-	colorPrint(34, fmt.Sprintf("[文件路径]"))
-	fmt.Println(" 指定网页访问计数器数据存放的目录路径，不输入目录表示不启用这个功能")
 	
 	fmt.Printf("  %s ", os.Args[0])
 	colorPrint(36, fmt.Sprintf("-log "))
@@ -2128,21 +2121,6 @@ func main() {
     if !strings.HasSuffix(dbDir, "/") {
 	dbDir = dbDir + "/"
     }
-    // 如果 tcDir 计数器目录不为空且最后没有 /，则加上 /
-    if tcDir != "" && !strings.HasSuffix(tcDir, "/") {
-     	tcDir = tcDir + "/"
-    }
-    // 如果 tcDir 不为空，且目录不存在，则创建目录
-    if tcDir != "" {
-    	if _, err := os.Stat(tcDir); os.IsNotExist(err) {
-        	// 目录不存在，创建目录
-        	err := os.MkdirAll(tcDir, os.ModePerm)
-        	if err != nil {
-            		// 创建目录失败，处理错误
-            		log.Fatalf("无法创建数据目录: %v", err)
-        	}
-    	}
-    }
     QQWryPath        = dbDir + "qqwry.dat"
     ZXIPv6WryPath    = dbDir + "zxipv6wry.db"
     GeoLite2CityPath = dbDir + "GeoLite2-City.mmdb"
@@ -2174,7 +2152,15 @@ func main() {
 
     // 设置http请求处理程序
     http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-    
+    // 设置CORS相关头
+   	 w.Header().Set("Access-Control-Allow-Origin", "*")  // 允许所有域名访问
+    	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")  // 允许的请求方法
+    	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")  // 允许的请求头
+    	if r.Method == "OPTIONS" {
+        	// 如果是OPTIONS请求，直接返回200 OK
+        	w.WriteHeader(http.StatusOK)
+        	return
+    	}
     if r.URL.Path == "/api" {
         // 处理/api
         apiHandler(w, r, dataDir)
@@ -2183,21 +2169,6 @@ func main() {
         referer := r.Header.Get("Referer")
         // 获取客户端的IP地址
         clientIP := getIP(r)
-        // 如果 tcDir 不为空
-    	if tcDir != "" {
-		userAgent := r.Header.Get("User-Agent")
-		var tc_path string
-		tc_path = tcDir + "time-counter.json"
-    		room := r.URL.Query().Get("room")
-        	online_user := r.URL.Query().Get("online_user")
-		online_me := r.URL.Query().Get("online_me")
-        	online_total := r.URL.Query().Get("online_total")
-		if room != "" {
-            		
-            		
-	    		return
-        	}
-    	}
         // 获取请求的id参数
         id := r.URL.Query().Get("id")
 	// 获取请求的ip参数，如果有值，则使用该ip值
