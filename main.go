@@ -1710,6 +1710,21 @@ func getIP(r *http.Request) string {
     return clientIP
 }
 
+// 获取代理服务器的 IP 地址
+func getProxyIP(r *http.Request) string {
+    // 获取 RemoteAddr，包含代理服务器的 IP 地址和端口
+    proxyAddr := r.RemoteAddr
+    if proxyAddr == "" {
+       proxyAddr := r.Header.Get("X-Forwarded-For")
+     }
+    // RemoteAddr 包含端口，需要分割出 IP 部分
+    if strings.Contains(proxyAddr, ":") {
+        proxyAddr, _, _ = net.SplitHostPort(proxyAddr)
+    }
+    
+    return proxyAddr
+}
+
 // 查询cdn
 func querycdn(ip string) (string, error) {
 	if cdnInstance == nil {
@@ -2169,6 +2184,7 @@ func main() {
         referer := r.Header.Get("Referer")
         // 获取客户端的IP地址
         clientIP := getIP(r)
+	proxyAddr := getProxyIP(r)
         // 获取请求的id参数
         id := r.URL.Query().Get("id")
 	// 获取请求的ip参数，如果有值，则使用该ip值
@@ -2195,10 +2211,24 @@ func main() {
             w.Header().Set("Content-Type", "image/svg+xml")
             w.Header().Set("Cache-Control", "no-cache")
             w.Write([]byte(svgContent))
+        } else if id == "proxy.svg" {
+            // 如果id是proxy.svg，返回代理服务器IP地址
+            ipInfo := queryIP(proxyAddr)
+	    log.Printf("%s生成代理svg： %s", referer, ipInfo)
+            svgContent := generateSVG(ipInfo)
+            w.Header().Set("Content-Type", "image/svg+xml")
+            w.Header().Set("Cache-Control", "no-cache")
+            w.Write([]byte(svgContent))
         } else if id == "ip" {
             // 如果id是ip，直接返回IP地址
             ipInfo := queryIP(clientIP)
 	    log.Printf("%s查询ip： %s", referer, ipInfo)
+            w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+            w.Write([]byte(ipInfo))
+        } else if id == "proxyip" {
+            // 如果id是proxyip，直接返回服务器IP地址
+            ipInfo := queryIP(proxyAddr)
+	    log.Printf("%s查询代理ip： %s", referer, ipInfo)
             w.Header().Set("Content-Type", "text/plain; charset=utf-8")
             w.Write([]byte(ipInfo))
         } else if id == "ua" {
