@@ -1715,7 +1715,7 @@ func getProxyIP(r *http.Request) string {
     // 获取 RemoteAddr，包含代理服务器的 IP 地址和端口
     proxyAddr := r.RemoteAddr
     if proxyAddr == "" {
-       proxyAddr := r.Header.Get("X-Forwarded-For")
+       proxyAddr = r.Header.Get("X-Forwarded-For")
      }
     // RemoteAddr 包含端口，需要分割出 IP 部分
     if strings.Contains(proxyAddr, ":") {
