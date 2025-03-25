@@ -99,12 +99,6 @@ type ApiRequest struct {
 }
 // 定义根目录请求的数据结构
 type Data struct {
-    TotalRules        int    `json:"total_rules"`
-    TodayNewRules     int    `json:"today_new_rules"`
-    LastRuleUpdate    string `json:"last_rule_update"`
-    TotalVisits       int    `json:"total_visits"`
-    TodayVisits       int    `json:"today_visits"`
-    LastVisitsUpdate  string `json:"last_visits_update"`
     Email             string `json:"email"`
     Img               string `json:"img"`
 }
@@ -147,12 +141,6 @@ func initializeData(dataFilePath string) {
     today := now.Format(timeFormat)
 
     initialData := Data{
-        TotalRules:       0,
-        TodayNewRules:    0,
-        LastRuleUpdate:   today,
-        TotalVisits:      0,
-        TodayVisits:      0,
-        LastVisitsUpdate: today,
         Email:            os.Getenv("Email"),
         Img:              "https://img-baofun.zhhainiao.com/pcwallpaper_ugc/static/a613b671bce87bdafae01938c7cad011.jpg",
     }
@@ -183,43 +171,13 @@ func initializeData(dataFilePath string) {
         }
 
         existingData := Data{
-            TotalRules:       getIntValue(rawData, "total_rules", initialData.TotalRules),
-            TodayNewRules:    getIntValue(rawData, "today_new_rules", initialData.TodayNewRules),
-            LastRuleUpdate:   getStringValue(rawData, "last_rule_update", initialData.LastRuleUpdate),
-            TotalVisits:      getIntValue(rawData, "total_visits", initialData.TotalVisits),
-            TodayVisits:      getIntValue(rawData, "today_visits", initialData.TodayVisits),
-            LastVisitsUpdate: getStringValue(rawData, "last_visits_update", initialData.LastVisitsUpdate),
             Img:              getStringValue(rawData, "img", initialData.Img),
             Email:            getStringValue(rawData, "email", initialData.Email),
         }
 
-        if existingData.LastRuleUpdate != today {
-            existingData.LastRuleUpdate = today
-            existingData.TodayNewRules = 0
-        }
-        if existingData.LastVisitsUpdate != today {
-            existingData.LastVisitsUpdate = today
-            existingData.TodayVisits = 0
-        }
         if os.Getenv("Email") != "" && existingData.Email != os.Getenv("Email") {
             existingData.Email = os.Getenv("Email")
         }
-        dataFilePath := filepath.Join(dataDir, "short_data.json")
-        // 统计dataDir目录下的.json文件数量
-        totalRules := 0
-        err = filepath.Walk(dataDir, func(path string, info os.FileInfo, err error) error {
-            if err != nil {
-                return err
-            }
-            if !info.IsDir() && filepath.Ext(info.Name()) == ".json" && info.Name() != filepath.Base(dataFilePath) {
-                totalRules++
-            }
-            return nil
-        })
-        if err != nil {
-            log.Fatalf("无法统计.json文件数量: %v", err)
-        }
-        existingData.TotalRules = totalRules
         
         // 将文件内容截断为0并将更新后的数据写入
         file.Seek(0, 0)
@@ -402,56 +360,6 @@ lastUpdate := time.Now().In(loc).Format("2006-01-02 15:04:05")
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return
     }
-    // 如果是新的规则，更新 short_data.json 中的数据
-    if isNewRule {
-        // 读取 short_data.json 文件
-        shortDataPath := filepath.Join(dataDir, "short_data.json")
-        shortData, err := ioutil.ReadFile(shortDataPath)
-        if err != nil {
-            http.Error(w, err.Error(), http.StatusInternalServerError)
-            return
-        }
-
-        // 解析 JSON 数据
-        var shortDataMap map[string]interface{}
-        if err := json.Unmarshal(shortData, &shortDataMap); err != nil {
-            http.Error(w, err.Error(), http.StatusInternalServerError)
-            return
-        }
-
-        // 获取当前上海时区日期
-        loc := time.FixedZone("CST", 8*60*60)
-        currentDate := time.Now().In(loc).Format("2006-01-02")
-
-        // 更新 total_rules 和 today_new_rules
-        totalRules := getIntValue(shortDataMap, "total_rules", 0)
-        todayNewRules := getIntValue(shortDataMap, "today_new_rules", 0)
-        lastRuleUpdate := getStringValue(shortDataMap, "last_rule_update", "")
-
-        if lastRuleUpdate != currentDate {
-            todayNewRules = 0
-        }
-
-        totalRules++
-        todayNewRules++
-
-        // 更新 short_data.json 的数据
-        shortDataMap["total_rules"] = totalRules
-        shortDataMap["today_new_rules"] = todayNewRules
-        shortDataMap["last_rule_update"] = currentDate
-
-        // 将更新后的数据写回 short_data.json 文件
-        updatedShortData, err := json.MarshalIndent(shortDataMap, "", "  ")
-        if err != nil {
-            http.Error(w, err.Error(), http.StatusInternalServerError)
-            return
-        }
-
-        if err := ioutil.WriteFile(shortDataPath, updatedShortData, 0644); err != nil {
-            http.Error(w, err.Error(), http.StatusInternalServerError)
-            return
-        }
-    }
     // 构造返回的URL
     host := r.Host
     shortURL := fmt.Sprintf("http://%s/%s", host, req.ShortCode)
@@ -496,10 +404,6 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 
     // 将统计数据的值替换到网页里
     htmlString := string(htmlContent)
-    htmlString = strings.ReplaceAll(htmlString, "{{totalRules}}", strconv.Itoa(data.TotalRules))
-    htmlString = strings.ReplaceAll(htmlString, "{{todayNewRules}}", strconv.Itoa(data.TodayNewRules))
-    htmlString = strings.ReplaceAll(htmlString, "{{totalvisits}}", strconv.Itoa(data.TotalVisits))
-    htmlString = strings.ReplaceAll(htmlString, "{{todayvisits}}", strconv.Itoa(data.TodayVisits))
     htmlString = strings.ReplaceAll(htmlString, "修改为你的邮箱", data.Email)
     htmlString = strings.ReplaceAll(htmlString, "my-img.jpeg", data.Img)
 
@@ -610,51 +514,7 @@ func shortHandler(w http.ResponseWriter, r *http.Request, dataDir string) {
      }
      // 读取 short_data.json 文件
         shortDataPath := filepath.Join(dataDir, "short_data.json")
-        shortData, err := ioutil.ReadFile(shortDataPath)
-        if err != nil {
-            http.Error(w, err.Error(), http.StatusInternalServerError)
-            return
-        }
-
-        // 解析 JSON 数据
-        var shortDataMap map[string]interface{}
-        if err := json.Unmarshal(shortData, &shortDataMap); err != nil {
-            http.Error(w, err.Error(), http.StatusInternalServerError)
-            return
-        }
-
-        // 获取当前上海时区日期
-        loc := time.FixedZone("CST", 8*60*60)
-        currentDate := time.Now().In(loc).Format("2006-01-02")
-
-        // 更新 total_rules 和 today_new_rules
-        totalVisits := getIntValue(shortDataMap, "total_visits", 0)
-        todayVisits := getIntValue(shortDataMap, "today_visits", 0)
-        lastVisitsUpdate := getStringValue(shortDataMap, "last_visits_update", "")
-
-        if lastVisitsUpdate != currentDate {
-            todayVisits = 0
-        }
-
-        totalVisits++
-        todayVisits++
-
-        // 更新 short_data.json 的数据
-        shortDataMap["total_visits"] = totalVisits
-        shortDataMap["today_visits"] = todayVisits
-        shortDataMap["last_visits_update"] = currentDate
-
-        // 将更新后的数据写回 short_data.json 文件
-        updatedShortData, err := json.MarshalIndent(shortDataMap, "", "  ")
-        if err != nil {
-            http.Error(w, err.Error(), http.StatusInternalServerError)
-            return
-        }
-
-        if err := ioutil.WriteFile(shortDataPath, updatedShortData, 0644); err != nil {
-            http.Error(w, err.Error(), http.StatusInternalServerError)
-            return
-        }
+        
        // 解析JSON内容
     var apiReq ApiRequest
     err = json.Unmarshal(jsonData, &apiReq)
