@@ -1,4 +1,4 @@
-name: 编译shortener
+name: 编译小的shortener
 
 on:
   workflow_dispatch:
