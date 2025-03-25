@@ -2030,7 +2030,30 @@ func main() {
     flag.BoolVar(&showVersion, "v", false, "版本号")
     flag.BoolVar(&showVersion, "version", false, "版本号")
     flag.Parse()
-    
+    if daemon {
+        // 检查是否已经在后台运行，通过环境变量判断
+        if os.Getenv("DAEMONIZED") != "1" {
+            // 构造新的环境变量，避免子进程再次进入该分支
+            env := append(os.Environ(), "DAEMONIZED=1")
+            // 创建新的进程，参数保持一致
+            cmd := exec.Command(os.Args[0], os.Args[1:]...)
+            cmd.Env = env
+            // 设置标准输出和错误输出，方便调试，也可以确保 ps 命令能看到输出
+            cmd.Stdout = os.Stdout
+            cmd.Stderr = os.Stderr
+            err := cmd.Start()
+            if err != nil {
+                log.Fatalf("启动后台进程失败: %v", err)
+            }
+            fmt.Printf("后台进程已启动，PID: %d\n", cmd.Process.Pid)
+            os.Exit(0)
+        }
+        // 如果已经是后台模式，则调用 Setsid 脱离控制终端
+        _, err := syscall.Setsid()
+        if err != nil {
+            log.Fatalf("设置会话ID失败: %v", err)
+        }
+    }
     //打印帮助信息
     if showHelp {
        // 添加颜色的打印函数
@@ -2099,11 +2122,6 @@ func main() {
        fmt.Println("Go Version:", runtime.Version())
        return
     }
-
-    if daemon {
-		runAsDaemon()
-    }
-	
     if email != "" {
 		os.Setenv("Email", email)
     }
@@ -2258,32 +2276,4 @@ func main() {
     if err := http.Serve(ln, nil); err != nil {
         log.Fatalf("服务器错误: %v", err)
     }
-}
-func runAsDaemon() {
-	switch runtime.GOOS {
-	case "linux", "freebsd":
-		// 在 Linux/FreeBSD 上，创建子进程后退出父进程
-		if os.Getppid() != 1 { // 父进程不是 init，说明不是后台
-			cmd := exec.Command(os.Args[0], os.Args[1:]...)
-			cmd.SysProcAttr = &syscall.SysProcAttr{Setsid: true}
-			cmd.Stdout, cmd.Stderr, cmd.Stdin = nil, nil, nil
-			err := cmd.Start()
-			if err != nil {
-				log.Fatalf("后台运行失败: %v", err)
-			}
-			os.Exit(0) // 父进程退出
-		}
-
-	case "windows":
-		// 在 Windows 上创建子进程，不需要隐藏窗口
-		cmd := exec.Command(os.Args[0], os.Args[1:]...)
-		err := cmd.Start()
-		if err != nil {
-			log.Fatalf("后台运行失败: %v", err)
-		}
-		os.Exit(0)
-
-	default:
-		log.Println("当前系统不支持后台模式")
-	}
 }
