@@ -1876,11 +1876,9 @@ func main() {
     flag.BoolVar(&showVersion, "version", false, "版本号")
     flag.Parse()
     
-    //打印帮助信息
     if showHelp {
-       // 添加颜色的打印函数
-	colorPrint := func(color int, message string) {
-		fmt.Printf("\x1b[1;%dm%s\x1b[0m", color, message)
+	colorText := func(color int, message string) string {
+		return fmt.Sprintf("\x1b[1;%dm%s\x1b[0m", color, message)
 	}
 
 	fmt.Printf("\nUsage: \n\n")
