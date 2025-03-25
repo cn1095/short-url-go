@@ -1889,49 +1889,39 @@ func main() {
 	colorPrint(34, fmt.Sprintf("[端口号]"))
 	fmt.Println(" 监听指定端口号")
 	
-	fmt.Printf("  %s ", os.Args[0])
 	colorPrint(36, fmt.Sprintf("-d "))
 	colorPrint(34, fmt.Sprintf("[文件路径]"))
 	fmt.Println(" 指定数据存放的目录路径，默认当前程序路径的./short_data文件夹")
 	
-	fmt.Printf("  %s ", os.Args[0])
 	colorPrint(36, fmt.Sprintf("-db "))
 	colorPrint(34, fmt.Sprintf("[文件路径]"))
 	fmt.Println(" 指定IP地址离线数据存放的目录路径，默认/tmp文件夹")
 	
-	fmt.Printf("  %s ", os.Args[0])
 	colorPrint(36, fmt.Sprintf("-log "))
 	colorPrint(34, fmt.Sprintf("[文件路径]"))
 	fmt.Println(" 启用日志，并指定日志存放的目录路径")
 	
-	fmt.Printf("  %s ", os.Args[0])
 	colorPrint(36, fmt.Sprintf("-admin "))
 	fmt.Println(" 启用管理员后台页面")
 	
-	fmt.Printf("  %s ", os.Args[0])
 	colorPrint(36, fmt.Sprintf("-e "))
 	colorPrint(34, fmt.Sprintf("[邮箱地址]"))
 	fmt.Println(" 指定邮箱地址，修改页面的邮箱地址")
 	
-	fmt.Printf("  %s ", os.Args[0])
 	colorPrint(36, fmt.Sprintf("-u "))
 	colorPrint(34, fmt.Sprintf("[账户名]"))
 	fmt.Println(" 指定管理页面的登陆账户名")
 	
-	fmt.Printf("  %s ", os.Args[0])
 	colorPrint(36, fmt.Sprintf("-w "))
 	colorPrint(34, fmt.Sprintf("[密码]"))
 	fmt.Println(" 指定管理页面的登陆密码")
 
-	fmt.Printf("  %s ", os.Args[0])
 	colorPrint(36, fmt.Sprintf("-daemon "))
 	fmt.Println(" 以后台模式运行")
 
-	fmt.Printf("  %s ", os.Args[0])
 	colorPrint(36, fmt.Sprintf("-v "))
 	fmt.Println(" 版本号")
 	
-	fmt.Printf("  %s ", os.Args[0])
 	colorPrint(36, fmt.Sprintf("-h "))
 	fmt.Println(" 帮助信息")
 	
