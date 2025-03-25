@@ -137,9 +137,6 @@ func initializeData(dataFilePath string) {
     // 获取当前时间并转换为东八区时间
     now := time.Now().In(cst)
     
-    // 格式化日期
-    today := now.Format(timeFormat)
-
     initialData := Data{
         Email:            os.Getenv("Email"),
         Img:              "https://img-baofun.zhhainiao.com/pcwallpaper_ugc/static/a613b671bce87bdafae01938c7cad011.jpg",
@@ -282,11 +279,8 @@ func apiHandler(w http.ResponseWriter, r *http.Request, dataDir string) {
     filePath := filepath.Join(dataDir, req.ShortCode+".json")
 
     // 检查文件是否存在
-    isNewRule := true
     _, err := os.Stat(filePath)
     if err == nil {
-        isNewRule = false
-
         // 文件存在，检查密码
         existingReq := ApiRequest{}
         fileData, err := ioutil.ReadFile(filePath)
@@ -512,8 +506,6 @@ func shortHandler(w http.ResponseWriter, r *http.Request, dataDir string) {
             return
         }
      }
-     // 读取 short_data.json 文件
-        shortDataPath := filepath.Join(dataDir, "short_data.json")
         
        // 解析JSON内容
     var apiReq ApiRequest
