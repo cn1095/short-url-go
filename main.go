@@ -129,13 +129,6 @@ func getIntValue(data map[string]interface{}, key string, defaultValue int) int 
 }
 //初始统计数据文件
 func initializeData(dataFilePath string) {
-    timeFormat := "2006-01-02"
-    
-    // 设置东八区（北京时间），偏移量为 +8 小时
-    cst := time.FixedZone("CST", 8*60*60)
-    
-    // 获取当前时间并转换为东八区时间
-    now := time.Now().In(cst)
     
     initialData := Data{
         Email:            os.Getenv("Email"),
