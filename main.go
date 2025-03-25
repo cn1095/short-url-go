@@ -11,6 +11,7 @@ import (
     "net"
     "net/http"
     "os"
+    "os/exec"
     "path/filepath"
     "strconv"
     "runtime"
@@ -2274,9 +2275,8 @@ func runAsDaemon() {
 		}
 
 	case "windows":
-		// 在 Windows 上创建子进程，并隐藏窗口
+		// 在 Windows 上创建子进程，不需要隐藏窗口
 		cmd := exec.Command(os.Args[0], os.Args[1:]...)
-		cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
 		err := cmd.Start()
 		if err != nil {
 			log.Fatalf("后台运行失败: %v", err)
