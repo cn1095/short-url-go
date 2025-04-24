@@ -156,6 +156,10 @@ func initializeData(dataFilePath string) {
         Email:            os.Getenv("Email"),
         Img:              "https://img-baofun.zhhainiao.com/pcwallpaper_ugc/static/a613b671bce87bdafae01938c7cad011.jpg",
     }
+    // 从完整路径中拆分目录和文件名
+    dataDir := filepath.Dir(dataFilePath)
+    dataFileName := filepath.Base(dataFilePath)
+
     // 检查文件是否存在，以及文件大小是否为 0
     fi, err := os.Stat(dataFilePath)
     if os.IsNotExist(err) || (err == nil && fi.Size() == 0) {
@@ -237,6 +241,7 @@ func initializeData(dataFilePath string) {
         log.Fatalf("无法更新统计数据文件: %v", err)
     }
 }
+
 // createAndWrite 创建文件并写入给定的 Data 对象
 func createAndWrite(path string, data Data) {
     // 确保目录存在
