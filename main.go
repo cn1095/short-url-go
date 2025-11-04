@@ -25,6 +25,7 @@ import (
     "syscall"
     "io"
     "regexp"
+	"bytes"
     "github.com/natefinch/lumberjack"
     "github.com/zu1k/nali/pkg/geoip"
     "github.com/zu1k/nali/pkg/ip2region"
@@ -260,6 +261,7 @@ func createAndWrite(path string, data Data) {
         log.Fatalf("无法写入初始统计数据: %v", err)
     }
 }
+
 //随机生成8位字符的后缀
 func generateRandomString(n int) string {
     const letters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
@@ -696,24 +698,24 @@ func shortHandler(w http.ResponseWriter, r *http.Request, dataDir string) {
     case "link":
     	// 判断 extra 是否为空
     	if extra != "" {
-        // 检查 apiReq.LongUrl 是否以 '/' 结尾，或 extra 是否以 '/' 开头
-        if strings.HasSuffix(apiReq.LongUrl, "/") && strings.HasPrefix(extra, "/") {
-            // 如果两者都有 '/'，移除 extra 的前导 '/'
-            extra = strings.TrimPrefix(extra, "/")
-        } else if !strings.HasSuffix(apiReq.LongUrl, "/") && !strings.HasPrefix(extra, "/") {
-            // 如果两者都没有 '/'，在两者之间添加一个 '/'
-            extra = "/" + extra
-        }
+        	// 检查 apiReq.LongUrl 是否以 '/' 结尾，或 extra 是否以 '/' 开头
+        	if strings.HasSuffix(apiReq.LongUrl, "/") && strings.HasPrefix(extra, "/") {
+            	// 如果两者都有 '/'，移除 extra 的前导 '/'
+            	extra = strings.TrimPrefix(extra, "/")
+        	} else if !strings.HasSuffix(apiReq.LongUrl, "/") && !strings.HasPrefix(extra, "/") {
+           	 	// 如果两者都没有 '/'，在两者之间添加一个 '/'
+            	extra = "/" + extra
+        	}
 
-        // 拼接 extra 到 apiReq.LongUrl
+        	// 拼接 extra 到 apiReq.LongUrl
            apiReq.LongUrl += extra
     	}
-	if r.URL.RawQuery != "" {
+		if r.URL.RawQuery != "" {
             apiReq.LongUrl += "?" + r.URL.RawQuery
         }
         // 如果是 WebSocket 请求，返回特定的头字段或响应体
         if r.Header.Get("Upgrade") == "websocket" {
-	   if strings.HasPrefix(apiReq.LongUrl, "http://") {
+	   		if strings.HasPrefix(apiReq.LongUrl, "http://") {
                 apiReq.LongUrl = "ws://" + strings.TrimPrefix(apiReq.LongUrl, "http://")
             } else if strings.HasPrefix(apiReq.LongUrl, "https://") {
                 apiReq.LongUrl = "wss://" + strings.TrimPrefix(apiReq.LongUrl, "https://")
@@ -721,7 +723,58 @@ func shortHandler(w http.ResponseWriter, r *http.Request, dataDir string) {
                 // 如果没有前缀，则添加 ws://
                 apiReq.LongUrl = "ws://" + apiReq.LongUrl
             }
-	}
+		}
+		// ===== 防止 POST 被转成 GET =====
+        if r.Method == http.MethodPost {
+            // 读取原始请求体
+            body, err := io.ReadAll(r.Body)
+            if err != nil {
+                http.Error(w, "读取POST请求体失败: "+err.Error(), http.StatusBadRequest)
+                return
+            }
+
+            // 创建新的 POST 请求（模拟重定向后浏览器重新访问）
+            req, err := http.NewRequest(http.MethodPost, apiReq.LongUrl, bytes.NewReader(body))
+            if err != nil {
+                http.Error(w, "创建新POST请求失败: "+err.Error(), http.StatusInternalServerError)
+                return
+            }
+
+            // ===== 重新设置请求头（不要完全复制原来的）=====
+            // 模拟浏览器重新访问后的头部
+            req.Header.Set("User-Agent", "Mozilla/5.0 (GoRedirect/1.0)")
+            req.Header.Set("Accept", "*/*")
+
+            // 如果原请求有 Content-Type，则复制它（保留表单类型）
+            if ct := r.Header.Get("Content-Type"); ct != "" {
+                req.Header.Set("Content-Type", ct)
+            }
+
+            // 如果有自定义认证头或 token，也可以有选择性地复制
+            if auth := r.Header.Get("Authorization"); auth != "" {
+                req.Header.Set("Authorization", auth)
+            }
+
+            // 发起请求
+            client := &http.Client{}
+            resp, err := client.Do(req)
+            if err != nil {
+                http.Error(w, "转发 POST 请求失败: "+err.Error(), http.StatusBadGateway)
+                return
+            }
+            defer resp.Body.Close()
+
+            // ===== 返回目标响应给客户端 =====
+            // 复制响应头
+            for k, v := range resp.Header {
+                w.Header()[k] = v
+            }
+            w.WriteHeader(resp.StatusCode)
+
+            // 复制响应体
+            io.Copy(w, resp.Body)
+            return
+        }
         http.Redirect(w, r, apiReq.LongUrl, http.StatusFound)
     case "html":
         // 如果是 WebSocket 请求，返回特定的头字段或响应体
@@ -2046,6 +2099,7 @@ func main() {
         email   string
         username   string
         password   string
+        
     )
 
     // 使用flag包解析命令行参数
@@ -2066,62 +2120,22 @@ func main() {
     
     //打印帮助信息
     if showHelp {
-       // 添加颜色的打印函数
-	colorPrint := func(color int, message string) {
-		fmt.Printf("\x1b[1;%dm%s\x1b[0m", color, message)
+       colorText := func(color int, message string) string {
+		return fmt.Sprintf("\x1b[1;%dm%s\x1b[0m", color, message)
 	}
 
 	fmt.Printf("\nUsage: \n\n")
-	fmt.Printf("  %s ", os.Args[0])
-	colorPrint(36, fmt.Sprintf("-p "))
-	colorPrint(34, fmt.Sprintf("[端口号]"))
-	fmt.Println(" 监听指定端口号")
-	
-	fmt.Printf("  %s ", os.Args[0])
-	colorPrint(36, fmt.Sprintf("-d "))
-	colorPrint(34, fmt.Sprintf("[文件路径]"))
-	fmt.Println(" 指定数据存放的目录路径，默认当前程序路径的./short_data文件夹")
-	
-	fmt.Printf("  %s ", os.Args[0])
-	colorPrint(36, fmt.Sprintf("-db "))
-	colorPrint(34, fmt.Sprintf("[文件路径]"))
-	fmt.Println(" 指定IP地址离线数据存放的目录路径，默认/tmp文件夹")
-	
-	fmt.Printf("  %s ", os.Args[0])
-	colorPrint(36, fmt.Sprintf("-log "))
-	colorPrint(34, fmt.Sprintf("[文件路径]"))
-	fmt.Println(" 启用日志，并指定日志存放的目录路径")
-	
-	fmt.Printf("  %s ", os.Args[0])
-	colorPrint(36, fmt.Sprintf("-admin "))
-	fmt.Println(" 启用管理员后台页面")
-	
-	fmt.Printf("  %s ", os.Args[0])
-	colorPrint(36, fmt.Sprintf("-e "))
-	colorPrint(34, fmt.Sprintf("[邮箱地址]"))
-	fmt.Println(" 指定邮箱地址，修改页面的邮箱地址")
-	
-	fmt.Printf("  %s ", os.Args[0])
-	colorPrint(36, fmt.Sprintf("-u "))
-	colorPrint(34, fmt.Sprintf("[账户名]"))
-	fmt.Println(" 指定管理页面的登陆账户名")
-	
-	fmt.Printf("  %s ", os.Args[0])
-	colorPrint(36, fmt.Sprintf("-w "))
-	colorPrint(34, fmt.Sprintf("[密码]"))
-	fmt.Println(" 指定管理页面的登陆密码")
-
-	fmt.Printf("  %s ", os.Args[0])
-	colorPrint(36, fmt.Sprintf("-daemon "))
-	fmt.Println(" 以后台模式运行")
-
-	fmt.Printf("  %s ", os.Args[0])
-	colorPrint(36, fmt.Sprintf("-v "))
-	fmt.Println(" 版本号")
-	
-	fmt.Printf("  %s ", os.Args[0])
-	colorPrint(36, fmt.Sprintf("-h "))
-	fmt.Println(" 帮助信息")
+	fmt.Printf("  %-16s %-14s %s\n", colorText(36, "-p"), colorText(34, "[端口号]"), "监听指定端口号")
+	fmt.Printf("  %-16s %-14s %s\n", colorText(36, "-d"), colorText(34, "[文件路径]"), "指定数据存放的目录路径，默认当前程序路径的./short_data文件夹")
+	fmt.Printf("  %-16s %-14s %s\n", colorText(36, "-db"), colorText(34, "[文件路径]"), "指定IP地址离线数据存放的目录路径，默认/tmp文件夹")
+	fmt.Printf("  %-16s %-14s %s\n", colorText(36, "-log"), colorText(34, "[文件路径]"), "启用日志，并指定日志存放的目录路径")
+	fmt.Printf("  %-16s %-14s %s\n", colorText(36, "-admin"), "", "启用管理员后台页面")
+	fmt.Printf("  %-16s %-14s %s\n", colorText(36, "-e"), colorText(34, "[邮箱地址]"), "指定邮箱地址，修改页面的邮箱地址")
+	fmt.Printf("  %-16s %-14s %s\n", colorText(36, "-u"), colorText(34, "[账户名]"), "指定管理页面的登陆账户名")
+	fmt.Printf("  %-16s %-14s %s\n", colorText(36, "-w"), colorText(34, "[密码]"), "指定管理页面的登陆密码")
+	fmt.Printf("  %-16s %-14s %s\n", colorText(36, "-daemon"), "", "以后台模式运行")
+	fmt.Printf("  %-16s %-14s %s\n", colorText(36, "-v"), "", "版本号")
+	fmt.Printf("  %-16s %-14s %s\n", colorText(36, "-h"), "", "帮助信息")
 	
        return
    }
@@ -2136,7 +2150,6 @@ func main() {
     if daemon {
 		runAsDaemon()
     }
-	
     if email != "" {
 		os.Setenv("Email", email)
     }
@@ -2160,7 +2173,7 @@ func main() {
         fmt.Println("无法创建IP离线数据存放目录:", err)
     }
     }
-    // 如果 dbDir ip离线数据目录最后没有 /，则加上 /
+    // 如果 dbDir 最后没有 /，则加上 /
     if !strings.HasSuffix(dbDir, "/") {
 	dbDir = dbDir + "/"
     }
@@ -2195,23 +2208,23 @@ func main() {
 
     // 设置http请求处理程序
     http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-    // 设置CORS相关头
+	// 设置CORS相关头
    	 w.Header().Set("Access-Control-Allow-Origin", "*")  // 允许所有域名访问
     	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")  // 允许的请求方法
     	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")  // 允许的请求头
+
     	if r.Method == "OPTIONS" {
         	// 如果是OPTIONS请求，直接返回200 OK
         	w.WriteHeader(http.StatusOK)
         	return
     	}
-    if r.URL.Path == "/api" {
-        // 处理/api
-        apiHandler(w, r, dataDir)
-    } else if r.URL.Path == "/" {
-	// 获取 Referer 头部
-        referer := r.Header.Get("Referer")
-        // 获取客户端的IP地址
-        clientIP := getIP(r)
+	if r.URL.Path == "/api" {
+        	// 处理/api
+        	apiHandler(w, r, dataDir)
+   	 } else if r.URL.Path == "/" {
+        	// 获取客户端的IP地址
+        	clientIP := getIP(r)
+        
         // 获取请求的id参数
         id := r.URL.Query().Get("id")
 	// 获取请求的ip参数，如果有值，则使用该ip值
@@ -2219,7 +2232,7 @@ func main() {
         if ipParam != "" {
             // 如果ip不为空，查询IP归属地
             ipInfo := queryIP(ipParam)
-	    log.Printf("%s查询归属地： %s", referer, ipInfo)
+	    log.Printf("查询归属地： %s", ipInfo)
             // 找到第一个空格的位置，排除IP地址部分
             if idx := strings.Index(ipInfo, " "); idx != -1 {
                 ipInfo = ipInfo[idx+1:] // 取空格后面的内容
@@ -2233,7 +2246,7 @@ func main() {
             // 如果id是svg，生成SVG图像并返回
             // 查询IP地址信息
 	    ipInfo := queryIP(clientIP)
-	    log.Printf("%s生成svg： %s", referer, ipInfo)
+	    log.Printf("生成svg： %s", ipInfo)
             svgContent := generateSVG(ipInfo)
             w.Header().Set("Content-Type", "image/svg+xml")
             w.Header().Set("Cache-Control", "no-cache")
@@ -2241,7 +2254,7 @@ func main() {
         } else if id == "ip" {
             // 如果id是ip，直接返回IP地址
             ipInfo := queryIP(clientIP)
-	    log.Printf("%s查询ip： %s", referer, ipInfo)
+	    log.Printf("查询IP： %s", ipInfo)
             w.Header().Set("Content-Type", "text/plain; charset=utf-8")
             w.Write([]byte(ipInfo))
         } else if id == "ua" {
@@ -2249,7 +2262,7 @@ func main() {
 	    userAgent := r.Header.Get("User-Agent")
 	    osInfo, browserInfo := getUAInfo(userAgent) // 确保接收函数返回值
 	    UAInfo := osInfo + "/" + browserInfo
-	    log.Printf("%s查询us： %s", referer, UAInfo)
+	    log.Printf("查询UA： %s", UAInfo)
             svgContent := generateUASVG(UAInfo)
             w.Header().Set("Content-Type", "image/svg+xml")
             w.Header().Set("Cache-Control", "no-cache")
@@ -2295,8 +2308,7 @@ func main() {
 func runAsDaemon() {
 	switch runtime.GOOS {
 	case "linux", "freebsd":
-		// 在 Linux/FreeBSD 上，创建子进程后退出父进程
-		if os.Getppid() != 1 { // 父进程不是 init，说明不是后台
+		if os.Getppid() != 1 {
 			cmd := exec.Command(os.Args[0], os.Args[1:]...)
 			cmd.SysProcAttr = &syscall.SysProcAttr{Setsid: true}
 			cmd.Stdout, cmd.Stderr, cmd.Stdin = nil, nil, nil
@@ -2304,11 +2316,10 @@ func runAsDaemon() {
 			if err != nil {
 				log.Fatalf("后台运行失败: %v", err)
 			}
-			os.Exit(0) // 父进程退出
+			os.Exit(0) 
 		}
 
 	case "windows":
-		// 在 Windows 上创建子进程，不需要隐藏窗口
 		cmd := exec.Command(os.Args[0], os.Args[1:]...)
 		err := cmd.Start()
 		if err != nil {
