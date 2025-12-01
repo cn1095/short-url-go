@@ -1261,13 +1261,15 @@ func renderAdminPage(w http.ResponseWriter, data []ApiRequest) {
 				color: #333;
 				padding: 20px;
 			}
-			.container {
-				width: 90%;
-				margin: 0 auto;
-				padding: 20px;
-				background-color: #fff;
-				box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-				border-radius: 8px;
+			.container {  
+   			 	width: 90%;  
+    			min-width: fit-content;  
+   	 			margin: 0 auto;  
+    			padding: 20px;  
+    			background-color: #fff;  
+    			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);  
+    			border-radius: 8px;  
+    			overflow-x: auto;  
 			}
 			input[type="text"], textarea {
 				padding: 10px;
@@ -1336,6 +1338,7 @@ func renderAdminPage(w http.ResponseWriter, data []ApiRequest) {
     			white-space: normal;  
     			max-width: none;  
     			cursor: pointer;  
+				color: #000; /* 展开后恢复黑色 */
     			background-color: #f0f8ff;  
 			}
 			td:last-child {  
@@ -1361,7 +1364,8 @@ func renderAdminPage(w http.ResponseWriter, data []ApiRequest) {
     			.container {  
         			width: 95%;  
         			padding: 10px;  
-        			overflow-x: auto;  
+        			overflow-x: auto; 
+					min-width: fit-content;
     			}  
     			table {  
         			min-width: 800px;  
