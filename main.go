@@ -34,7 +34,7 @@ import (
     "github.com/zu1k/nali/pkg/cdn"
     "github.com/zu1k/nali/pkg/zxipv6wry"
     "github.com/zu1k/nali/pkg/ip2location"
-	"github.com/charmbracelet/go-counter-badge" 
+	"github.com/lmq8267/go-counter-badge" 
 )
 
 //go:embed static/*
@@ -2017,19 +2017,33 @@ func queryIP(ip string) string {
 
 // 生成SVG内容
 func generateSVG(clientIP string) string {  
-    // 使用 go-counter-badge 生成 IP 徽章  
-    svg := badge.New("IP", clientIP)  
-    svg.ColorLeft("#515151")  
-    svg.ColorRight("#95c10d")  
-    return svg.SVG()  
+    flatBadge := badge.Badge{    
+        FontType:             badge.Verdana,    
+        LeftText:             "IP",    
+        LeftTextColor:        "#fff",    
+        LeftBackgroundColor:  "#515151",    
+        RightText:            clientIP,    
+        RightTextColor:       "#fff",    
+        RightBackgroundColor: "#95c10d",    
+        XRadius:              "3",  // 圆角    
+        YRadius:              "3",    
+    }    
+    return flatBadge.SVG()    
 }
 
 func generateUASVG(uaInfo string) string {  
-    // 使用 go-counter-badge 生成 UA 徽章  
-    svg := badge.New("UA", uaInfo)  
-    svg.ColorLeft("#515151")  
-    svg.ColorRight("#95c10d")  
-    return svg.SVG()  
+    flatBadge := badge.Badge{    
+        FontType:             badge.Verdana,    
+        LeftText:             "UA",    
+        LeftTextColor:        "#fff",    
+        LeftBackgroundColor:  "#515151",    
+        RightText:            uaInfo,    
+        RightTextColor:       "#fff",    
+        RightBackgroundColor: "#95c10d",    
+        XRadius:              "3",  // 圆角    
+        YRadius:              "3",    
+    }    
+    return flatBadge.SVG()    
 }
 
 // 判断用户代理并获取操作系统和浏览器信息
