@@ -34,7 +34,7 @@ import (
     "github.com/zu1k/nali/pkg/cdn"
     "github.com/zu1k/nali/pkg/zxipv6wry"
     "github.com/zu1k/nali/pkg/ip2location"
-	"github.com/lmq8267/go-counter-badge" 
+	"github.com/lmq8267/go-counter-badge/badge" 
 )
 
 //go:embed static/*
