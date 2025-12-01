@@ -91,6 +91,8 @@ jobs:
             export GOARCH=$GOarch
             export GOARM=$GOarm
             export GOMIPS=$GOmips
+            go get github.com/lmq8267/go-counter-badge@v1.2.4
+            cat go.sum | grep lmq8267
             go build -ldflags="-s -w"
             echo "shortener ：`ls -alh shortener | awk '{print $5}'`"
             file shortener
