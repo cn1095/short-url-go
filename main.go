@@ -1297,7 +1297,7 @@ func renderAdminPage(w http.ResponseWriter, data []ApiRequest) {
 			table {
 				width: 100%;
 				border-collapse: collapse;
-				margin: 20px 0;
+				margin: 10px 0;
 			}
 			table, th, td {
 				border: 1px solid #ddd;
@@ -1308,7 +1308,7 @@ func renderAdminPage(w http.ResponseWriter, data []ApiRequest) {
 				padding: 12px;
 			}
 			td {
-				padding: 10px;
+				padding: 6px;
 				text-align: center;
 				overflow: hidden;
 				text-overflow: ellipsis;
@@ -1336,10 +1336,15 @@ func renderAdminPage(w http.ResponseWriter, data []ApiRequest) {
     			white-space: normal;  
     			max-width: none;  
     			cursor: pointer;  
-    			color: #007bff;  
     			background-color: #f0f8ff;  
 			}
-			
+			td:last-child {  
+    			white-space: nowrap;  
+			}  
+			td:last-child button {  
+    			display: inline-block;  
+    			margin: 0 2px;  
+			}
 			.highlight {
 				background-color: yellow;
 			}
@@ -1352,18 +1357,28 @@ func renderAdminPage(w http.ResponseWriter, data []ApiRequest) {
 			.pagination span {
 				margin: 0 10px;
 			}
-			@media (max-width: 768px) {
-				.container {
-					width: 100%;
-					padding: 10px;
-				}
-				button {
-					width: 100%;
-					margin: 5px 0;
-				}
-				input[type="text"], textarea {
-					width: 100%;
-				}
+			@media (max-width: 768px) {  
+    			.container {  
+        			width: 95%;  
+        			padding: 10px;  
+        			overflow-x: auto;  
+    			}  
+    			table {  
+        			min-width: 800px;  
+        			font-size: 14px;  
+    			}  
+    			th, td {  
+        			padding: 8px 4px;  
+    			}  
+    			td:last-child button {  
+        			display: block;  
+       	 			margin: 2px 0;  
+        			width: 100%;  
+    			}  
+    			td:nth-child(1) {  
+        			width: 200px;  
+        			max-width: 200px;  
+    			}  
 			}
 			.editable {
 				background-color: #f0f8ff;
