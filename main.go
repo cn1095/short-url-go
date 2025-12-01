@@ -1320,12 +1320,14 @@ func renderAdminPage(w http.ResponseWriter, data []ApiRequest) {
     			text-overflow: ellipsis;  
     			cursor: pointer;  
     			transition: all 0.3s ease;  
+				max-width: 300px;
 			}  
   
 		    td:nth-child(1).expanded {  
     			white-space: normal;  
     			word-wrap: break-word;  
-    			word-break: break-all;  
+    			word-break: break-all; 
+				max-width: 300px;
 			}
 			.highlight {
 				background-color: yellow;
@@ -1424,15 +1426,6 @@ func renderAdminPage(w http.ResponseWriter, data []ApiRequest) {
         }
 		</style>
 		<script>
-			function toggleLongUrl(cell) {  
-    			if (cell.classList.contains('expanded')) {  
-        			cell.classList.remove('expanded');  
-        			cell.title = '点击展开完整内容';  
-    			} else {  
-        			cell.classList.add('expanded');  
-        			cell.title = '点击收起内容';  
-    			}  
-			}
 			function searchTable() {
 				var input, filter, table, tr, td, i, j, txtValue;
 				input = document.getElementById("searchInput");
@@ -1500,6 +1493,16 @@ func renderAdminPage(w http.ResponseWriter, data []ApiRequest) {
 				document.getElementById("totalPages").innerText = " 总页数: " + Math.ceil(rows.length / pageSize);
 			}
 
+			
+			function toggleLongUrl(cell) {  
+    			if (cell.classList.contains('expanded')) {  
+        			cell.classList.remove('expanded');  
+        			cell.title = '点击展开完整内容';  
+    			} else {  
+        			cell.classList.add('expanded');  
+        			cell.title = '点击收起内容';  
+    			}  
+			}
 			window.onload = function() {
 				var longUrlCells = document.querySelectorAll('td:nth-child(1)');  
     			longUrlCells.forEach(function(cell) {  
