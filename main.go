@@ -2028,7 +2028,7 @@ func generateSVG(clientIP string) string {
         XRadius:              "3",  // 圆角    
         YRadius:              "3",    
     }    
-    return flatBadge.String()   
+    return flatBadge.Render() 
 }
 
 func generateUASVG(uaInfo string) string {  
@@ -2043,7 +2043,7 @@ func generateUASVG(uaInfo string) string {
         XRadius:              "3",  // 圆角    
         YRadius:              "3",    
     }    
-    return flatBadge.String()
+    return flatBadge.Render()
 }
 
 // 判断用户代理并获取操作系统和浏览器信息
