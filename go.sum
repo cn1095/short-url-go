@@ -130,7 +130,6 @@ github.com/kr/fs v0.1.0/go.mod h1:FFnZGqtBN9Gxj7eW1uZ42v5BccTP0vu6NEaFoC2HwRg=
 github.com/kr/pretty v0.1.0/go.mod h1:dAy3ld7l9f0ibDNOQOHHMYYIIbhfbHSm3C4ZsoJORNo=
 github.com/kr/pty v1.1.1/go.mod h1:pFQYn66WHrOpPYNljwOMqo10TkYh1fy3cYio2l3bCsQ=
 github.com/kr/text v0.1.0/go.mod h1:4Jbv+DJW3UT/LiOwJeYQe1efqtUx/iVham/4vfdArNI=
-github.com/lmq8267/go-counter-badge v1.2.4/go.mod h1:E4/3PYIpd0d2xZCDc6bECY1RjATKzxXXF9vITk4voBw=
 github.com/lionsoul2014/ip2region/binding/golang v0.0.0-20230731060429-6ed8bf011875 h1:SeCWAUH2JKORWw0q0/kic8PiHXf6KfADToUQYGHyA2I=
 github.com/lionsoul2014/ip2region/binding/golang v0.0.0-20230731060429-6ed8bf011875/go.mod h1:C5LA5UO2ZXJrLaPLYtE1wUJMiyd/nwWaCO5cw/2pSHs=
 github.com/magiconair/properties v1.8.7 h1:IeQXZAiQcpL9mgcAe1Nu6cX9LLw6ExEHKjN0VQdvPDY=
