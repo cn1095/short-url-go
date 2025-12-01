@@ -34,6 +34,7 @@ import (
     "github.com/zu1k/nali/pkg/cdn"
     "github.com/zu1k/nali/pkg/zxipv6wry"
     "github.com/zu1k/nali/pkg/ip2location"
+	"github.com/charmbracelet/go-counter-badge" 
 )
 
 //go:embed static/*
@@ -2015,96 +2016,22 @@ func queryIP(ip string) string {
 }
 
 // 生成SVG内容
-func generateSVG(clientIP string) string {
-    // 使用估算值，每个字符宽度为 5px（你可以根据实际需求调整）
-    const charWidth = 5
-    
-    // 计算文本宽度，不能在常量表达式中使用len(clientIP)
-    textWidth := len(clientIP) * charWidth  // 计算文本宽度
-
-    // 右边矩形宽度比文本宽度多一些，保证有适当的间隔
-    rectWidth := textWidth // 右边矩形的宽度
-
-    // 调整左边矩形的宽度，使其比原来小一些
-    leftRectWidth := 30 // 左边矩形宽度减少至 30（你可以根据实际需求调整）
-
-    // 确保宽度是计算出来的矩形总宽度
-    totalWidth := leftRectWidth + rectWidth
-
-    svgContent := fmt.Sprintf(`
-<svg xmlns="http://www.w3.org/2000/svg" width="%d" height="20" viewBox="0 0 %d 20">
-    <!-- 左边固定部分：背景 #515151，宽度调整为 leftRectWidth，包含左侧小圆角 -->
-    <path d="
-        M3 0 
-        h%d 
-        v20 
-        h-%d 
-        a3 3 0 0 1 -3 -3 
-        v-14 
-        a3 3 0 0 1 3 -3 
-        z" fill="#515151" />
-    <text x="10" y="15" font-size="12" fill="#ffffff">IP</text>
-
-    <!-- 右边动态部分：背景 #95c10d -->
-    <path d="
-        M%d 0 
-        h%d 
-        a3 3 0 0 1 3 3 
-        v14 
-        a3 3 0 0 1 -3 3 
-        h-%d 
-        v-20 
-        z" fill="#95c10d" />
-    <text x="%d" y="15" font-size="12" fill="#ffffff">%s</text>
-</svg>`, totalWidth, totalWidth, leftRectWidth-3, leftRectWidth-3, leftRectWidth, rectWidth-3, rectWidth-3, leftRectWidth+10, clientIP)
-
-    return svgContent
+func generateSVG(clientIP string) string {  
+    // 使用 go-counter-badge 生成 IP 徽章  
+    svg := badge.New("IP", clientIP)  
+    svg.ColorLeft("#515151")  
+    svg.ColorRight("#95c10d")  
+    return svg.SVG()  
 }
-func generateUASVG(uaInfo string) string {
-    // 使用估算值，每个字符宽度为 5px（你可以根据实际需求调整）
-    const charWidth = 6
-    fmt.Println("UA标识：", uaInfo)
-    // 计算文本宽度，不能在常量表达式中使用len(UAInfo)
-    textWidth := len(uaInfo) * charWidth  // 计算文本宽度
 
-    // 右边矩形宽度比文本宽度多一些，保证有适当的间隔
-    rectWidth := textWidth + 30 // 右边矩形的宽度
-
-    // 调整左边矩形的宽度，使其比原来小一些
-    leftRectWidth := 40 // 左边矩形宽度减少至 30（你可以根据实际需求调整）
-
-    // 确保宽度是计算出来的矩形总宽度
-    totalWidth := leftRectWidth + rectWidth
-
-    svgContent := fmt.Sprintf(`
-<svg xmlns="http://www.w3.org/2000/svg" width="%d" height="20" viewBox="0 0 %d 20">
-    <!-- 左边固定部分：背景 #515151，宽度调整为 leftRectWidth，包含左侧小圆角 -->
-    <path d="
-        M3 0 
-        h%d 
-        v20 
-        h-%d 
-        a3 3 0 0 1 -3 -3 
-        v-14 
-        a3 3 0 0 1 3 -3 
-        z" fill="#515151" />
-    <text x="10" y="15" font-size="12" fill="#ffffff">UA</text>
-
-    <!-- 右边动态部分：背景 #95c10d -->
-    <path d="
-        M%d 0 
-        h%d 
-        a3 3 0 0 1 3 3 
-        v14 
-        a3 3 0 0 1 -3 3 
-        h-%d 
-        v-20 
-        z" fill="#95c10d" />
-    <text x="%d" y="15" font-size="12" fill="#ffffff">%s</text>
-</svg>`, totalWidth, totalWidth, leftRectWidth-3, leftRectWidth-3, leftRectWidth, rectWidth-3, rectWidth-3, leftRectWidth+10, uaInfo)
-
-    return svgContent
+func generateUASVG(uaInfo string) string {  
+    // 使用 go-counter-badge 生成 UA 徽章  
+    svg := badge.New("UA", uaInfo)  
+    svg.ColorLeft("#515151")  
+    svg.ColorRight("#95c10d")  
+    return svg.SVG()  
 }
+
 // 判断用户代理并获取操作系统和浏览器信息
 func getUAInfo(userAgent string) (string, string) {
 	// 操作系统信息提取
