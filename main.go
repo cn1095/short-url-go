@@ -1229,11 +1229,19 @@ func adminHandler(w http.ResponseWriter, r *http.Request, dataDir string) {
 
 	// 生成HTML响应
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	renderAdminPage(w, allData)
+	renderAdminPage(w, r, allData)
+}
+
+func getHost(r *http.Request) string {  
+    scheme := "http"  
+    if r.TLS != nil {  
+        scheme = "https"  
+    }  
+    return scheme + "://" + r.Host  
 }
 
 // 生成/admin页面的HTML响应
-func renderAdminPage(w http.ResponseWriter, data []ApiRequest) {
+func renderAdminPage(w http.ResponseWriter, r *http.Request, data []ApiRequest) {
         // 读取日志文件内容
 	var logContent string
 	if logDir != "" {
@@ -1782,9 +1790,9 @@ func renderAdminPage(w http.ResponseWriter, data []ApiRequest) {
 					{{range .}}
 					<tr>
 						<td data-field="LongUrl" title="点击可展开完整内容">{{.LongUrl}}</td>
-						<td>{{.ShortCode}}</td>
+						<td><a href="{{$.Host}}/{{.ShortCode}}" target="_blank" style="color: #007bff; text-decoration: underline;">{{.ShortCode}}</a></td>
 						<td data-field="Password">{{.Password}}</td>
-						<td data-field="client_ip">{{.ClientIP}}</td>
+						<td><a href="{{$.Host}}?ip={{.ClientIP}}" target="_blank" style="color: #007bff; text-decoration: underline;">{{.ClientIP}}</a></td>
 						<td data-field="Expiration">{{.Expiration}}</td>
 						<td data-field="burn_after_reading">{{.BurnAfterReading}}</td>
 						<td data-field="Type">{{.Type}}</td>
@@ -1827,7 +1835,17 @@ func renderAdminPage(w http.ResponseWriter, data []ApiRequest) {
 	</body>
 	</html>
 	`
-       pageContent := strings.ReplaceAll(adminTemplate, "{{LOG_CONTENT}}", logContent)
+    pageContent := strings.ReplaceAll(adminTemplate, "{{LOG_CONTENT}}", logContent)
+	// 创建包含Host信息的数据结构  
+	type AdminData struct {  
+    	Host string  
+    	Data []ApiRequest  
+	}  
+  
+	adminData := AdminData{  
+    	Host: getHost(r),  
+    	Data: data,  
+	}
 	// 渲染页面
 	tmpl, err := template.New("admin").Parse(pageContent)
 	if err != nil {
@@ -1835,7 +1853,7 @@ func renderAdminPage(w http.ResponseWriter, data []ApiRequest) {
 		return
 	}
 
-	err = tmpl.Execute(w, data)
+	err = tmpl.Execute(w, adminData)
 	if err != nil {
 		http.Error(w, "无法渲染模板", http.StatusInternalServerError)
 		return
