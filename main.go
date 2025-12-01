@@ -1315,20 +1315,31 @@ func renderAdminPage(w http.ResponseWriter, data []ApiRequest) {
 			}
 			td:nth-child(1) {  
     			width: 300px;  
-   				white-space: nowrap;  
+    			max-width: 300px;  
+    			white-space: nowrap;  
     			overflow: hidden;  
     			text-overflow: ellipsis;  
-    			cursor: pointer;  
-    			transition: all 0.3s ease;  
-				max-width: 300px;
-			}  
-  
-		    td:nth-child(1).expanded {  
-    			white-space: normal;  
     			word-wrap: break-word;  
-    			word-break: break-all; 
-				max-width: 300px;
+    			word-break: break-all;  
+			}  
+			td:nth-child(1).truncated {  
+    			cursor: pointer;  
+    			color: #007bff;  
+    			text-decoration: underline;  
+    			transition: all 0.3s ease;  
+			}  
+			td:nth-child(1).truncated:hover {  
+    			color: #0056b3;  
+   				background-color: #f0f8ff;  
+			}  
+			td:nth-child(1).expanded {  
+    			white-space: normal;  
+    			max-width: none;  
+    			cursor: pointer;  
+    			color: #007bff;  
+    			background-color: #f0f8ff;  
 			}
+			
 			.highlight {
 				background-color: yellow;
 			}
@@ -1491,9 +1502,15 @@ func renderAdminPage(w http.ResponseWriter, data []ApiRequest) {
 
 				document.getElementById("currentPage").innerText = " 当前页: " + currentPage + " / ";
 				document.getElementById("totalPages").innerText = " 总页数: " + Math.ceil(rows.length / pageSize);
+				
+				// 重新初始化长链接展开功能  
+    			setTimeout(initLongUrlToggle, 100);
 			}
 
-			
+			function isTextTruncated(element) {  
+    			return element.scrollWidth > element.clientWidth;  
+			}  
+  
 			function toggleLongUrl(cell) {  
     			if (cell.classList.contains('expanded')) {  
         			cell.classList.remove('expanded');  
@@ -1502,22 +1519,34 @@ func renderAdminPage(w http.ResponseWriter, data []ApiRequest) {
         			cell.classList.add('expanded');  
         			cell.title = '点击收起内容';  
     			}  
+			}  
+  
+			function initLongUrlToggle() {  
+    			var longUrlCells = document.querySelectorAll('td:nth-child(1)');  
+    			longUrlCells.forEach(function(cell) {  
+        			// 检查文本是否被截断  
+        			if (isTextTruncated(cell)) {  
+            			cell.classList.add('truncated');  
+            			cell.title = '点击展开完整内容';  
+            			cell.onclick = function() {  
+                			toggleLongUrl(this);  
+            			};  
+        			} else {  
+            			// 短链接不添加任何交互  
+            			cell.title = '';  
+            			cell.onclick = null;  
+        			}  
+    			});  
 			}
 			window.onload = function() {
-				var longUrlCells = document.querySelectorAll('td:nth-child(1)');  
-    			longUrlCells.forEach(function(cell) {  
-        			cell.title = '点击展开完整内容';  
-        			cell.onclick = function() {  
-            			toggleLongUrl(this);  
-        			};  
-    			});
-				
 				var savedPageSize = localStorage.getItem("pageSize");
 				if (savedPageSize) {
 					pageSize = parseInt(savedPageSize);
 				}
 				updatePageSizeSelect();
 				updateTablePagination();
+				// 初始化长链接展开功能  
+    			initLongUrlToggle();
 			};
 
 			function changePageSize() {
