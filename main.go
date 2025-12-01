@@ -1587,6 +1587,10 @@ func renderAdminPage(w http.ResponseWriter, r *http.Request, data []ApiRequest) 
 
 			function updatePageSizeSelect() {
 				var select = document.getElementById("pageSizeSelect");
+				if (!select) {  
+        			console.log("pageSizeSelect element not found");  
+        			return;  
+    			}
 				for (var i = 0; i < select.options.length; i++) {
 					if (parseInt(select.options[i].value) === pageSize) {
 						select.selectedIndex = i;
@@ -1787,7 +1791,7 @@ func renderAdminPage(w http.ResponseWriter, r *http.Request, data []ApiRequest) 
 					</tr>
 				</thead>
 				<tbody>
-					{{range .}}
+					{{range .Data}} 
 					<tr>
 						<td data-field="LongUrl" title="点击可展开完整内容">{{.LongUrl}}</td>
 						<td>  
