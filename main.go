@@ -1313,9 +1313,19 @@ func renderAdminPage(w http.ResponseWriter, data []ApiRequest) {
 				overflow: hidden;
 				text-overflow: ellipsis;
 			}
-			td:nth-child(1) {
-				width: 300px;
-				white-space: normal;
+			td:nth-child(1) {  
+    			width: 300px;  
+   				white-space: nowrap;  
+    			overflow: hidden;  
+    			text-overflow: ellipsis;  
+    			cursor: pointer;  
+    			transition: all 0.3s ease;  
+			}  
+  
+		    td:nth-child(1).expanded {  
+    			white-space: normal;  
+    			word-wrap: break-word;  
+    			word-break: break-all;  
 			}
 			.highlight {
 				background-color: yellow;
@@ -1414,6 +1424,15 @@ func renderAdminPage(w http.ResponseWriter, data []ApiRequest) {
         }
 		</style>
 		<script>
+			function toggleLongUrl(cell) {  
+    			if (cell.classList.contains('expanded')) {  
+        			cell.classList.remove('expanded');  
+        			cell.title = '点击展开完整内容';  
+    			} else {  
+        			cell.classList.add('expanded');  
+        			cell.title = '点击收起内容';  
+    			}  
+			}
 			function searchTable() {
 				var input, filter, table, tr, td, i, j, txtValue;
 				input = document.getElementById("searchInput");
@@ -1482,6 +1501,14 @@ func renderAdminPage(w http.ResponseWriter, data []ApiRequest) {
 			}
 
 			window.onload = function() {
+				var longUrlCells = document.querySelectorAll('td:nth-child(1)');  
+    			longUrlCells.forEach(function(cell) {  
+        			cell.title = '点击展开完整内容';  
+        			cell.onclick = function() {  
+            			toggleLongUrl(this);  
+        			};  
+    			});
+				
 				var savedPageSize = localStorage.getItem("pageSize");
 				if (savedPageSize) {
 					pageSize = parseInt(savedPageSize);
@@ -1702,7 +1729,7 @@ func renderAdminPage(w http.ResponseWriter, data []ApiRequest) {
 				<tbody>
 					{{range .}}
 					<tr>
-						<td data-field="LongUrl">{{.LongUrl}}</td>
+						<td data-field="LongUrl" title="点击可展开完整内容">{{.LongUrl}}</td>
 						<td>{{.ShortCode}}</td>
 						<td data-field="Password">{{.Password}}</td>
 						<td data-field="client_ip">{{.ClientIP}}</td>
