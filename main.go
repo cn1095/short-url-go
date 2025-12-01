@@ -2034,14 +2034,14 @@ func generateSVG(clientIP string) ([]byte, bool) {
     badgeWriter, err := badge.NewWriter()  
     if err != nil {  
         // 只记录错误，返回失败标记  
-        internal.SentryError(err)  
+		log.Printf("创建badge writer失败: %v", err)
         return nil, false  
     }  
       
     svg, err := badgeWriter.RenderFlatBadge(flatBadge)  
     if err != nil {  
         // 只记录错误，返回失败标记  
-        internal.SentryError(err)  
+		log.Printf("渲染IP SVG失败: %v", err)
         return nil, false  
     }  
       
@@ -2065,14 +2065,14 @@ func generateUASVG(uaInfo string) ([]byte, bool) {
     badgeWriter, err := badge.NewWriter()  
     if err != nil {  
         // 只记录错误，返回失败标记  
-        internal.SentryError(err)  
+		log.Printf("创建badge writer失败: %v", err)
         return nil, false  
     }  
       
     svg, err := badgeWriter.RenderFlatBadge(flatBadge)  
     if err != nil {  
         // 只记录错误，返回失败标记  
-        internal.SentryError(err)  
+		log.Printf("渲染UA SVG失败: %v", err)
         return nil, false  
     }  
       
