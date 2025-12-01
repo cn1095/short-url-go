@@ -91,12 +91,6 @@ jobs:
             export GOARCH=$GOarch
             export GOARM=$GOarm
             export GOMIPS=$GOmips
-            go mod tidy
-            echo "看看"
-            cat go.mod
-            echo "好几十"
-            cat go.sum
-            echo "好了"
             go build -ldflags="-s -w"
             echo "shortener ：`ls -alh shortener | awk '{print $5}'`"
             file shortener
