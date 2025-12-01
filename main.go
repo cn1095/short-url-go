@@ -1790,9 +1790,21 @@ func renderAdminPage(w http.ResponseWriter, r *http.Request, data []ApiRequest) 
 					{{range .}}
 					<tr>
 						<td data-field="LongUrl" title="点击可展开完整内容">{{.LongUrl}}</td>
-						<td><a href="{{$.Host}}/{{.ShortCode}}" target="_blank" style="color: #007bff; text-decoration: underline;">{{.ShortCode}}</a></td>
+						<td>  
+    					{{if .ShortCode}}  
+        					<a href="{{$.Host}}/{{.ShortCode}}" target="_blank" style="color: #007bff; text-decoration: underline;">{{.ShortCode}}</a>  
+    					{{else}}  
+        					{{.ShortCode}}  
+    					{{end}}  
+						</td>
 						<td data-field="Password">{{.Password}}</td>
-						<td><a href="{{$.Host}}?ip={{.ClientIP}}" target="_blank" style="color: #007bff; text-decoration: underline;">{{.ClientIP}}</a></td>
+						<td>  
+    					{{if .ClientIP}}  
+        					<a href="{{$.Host}}?ip={{.ClientIP}}" target="_blank" style="color: #007bff; text-decoration: underline;">{{.ClientIP}}</a>  
+    					{{else}}  
+        					{{.ClientIP}}  
+    					{{end}}  
+						</td>
 						<td data-field="Expiration">{{.Expiration}}</td>
 						<td data-field="burn_after_reading">{{.BurnAfterReading}}</td>
 						<td data-field="Type">{{.Type}}</td>
