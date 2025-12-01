@@ -91,6 +91,7 @@ jobs:
             export GOARCH=$GOarch
             export GOARM=$GOarm
             export GOMIPS=$GOmips
+            go get github.com/lmq8267/go-counter-badge@v1.2.4
             go mod tidy
             echo "看看"
             cat go.mod
