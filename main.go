@@ -2016,22 +2016,39 @@ func queryIP(ip string) string {
 }
 
 // 生成SVG内容
-func generateSVG(clientIP string) string {  
-    flatBadge := badge.Badge{    
-        FontType:             badge.Verdana,    
-        LeftText:             "IP",    
-        LeftTextColor:        "#fff",    
-        LeftBackgroundColor:  "#515151",    
-        RightText:            clientIP,    
-        RightTextColor:       "#fff",    
-        RightBackgroundColor: "#95c10d",    
-        XRadius:              "3",  // 圆角    
-        YRadius:              "3",    
-    }    
-    return flatBadge.Render() 
+func generateSVG(clientIP string) ([]byte, bool) {
+    // 创建 badge 结构体  
+    flatBadge := badge.Badge{  
+        FontType:             badge.Verdana,  
+        LeftText:             "IP",  
+        LeftTextColor:        "#fff",  
+        LeftBackgroundColor:  "#515151",  
+        RightText:            clientIP,  
+        RightTextColor:       "#fff",  
+        RightBackgroundColor: "#95c10d",  
+        XRadius:              "3",  // 圆角  
+        YRadius:              "3",  
+    }  
+      
+    // 使用 badge writer 渲染  
+    badgeWriter, err := badge.NewWriter()  
+    if err != nil {  
+        // 只记录错误，返回失败标记  
+        internal.SentryError(err)  
+        return nil, false  
+    }  
+      
+    svg, err := badgeWriter.RenderFlatBadge(flatBadge)  
+    if err != nil {  
+        // 只记录错误，返回失败标记  
+        internal.SentryError(err)  
+        return nil, false  
+    }  
+      
+    return svg, true  
 }
 
-func generateUASVG(uaInfo string) string {  
+func generateUASVG(uaInfo string) ([]byte, bool) {
     flatBadge := badge.Badge{    
         FontType:             badge.Verdana,    
         LeftText:             "UA",    
@@ -2042,8 +2059,24 @@ func generateUASVG(uaInfo string) string {
         RightBackgroundColor: "#95c10d",    
         XRadius:              "3",  // 圆角    
         YRadius:              "3",    
-    }    
-    return flatBadge.Render()
+    }   
+	
+    // 使用 badge writer 渲染  
+    badgeWriter, err := badge.NewWriter()  
+    if err != nil {  
+        // 只记录错误，返回失败标记  
+        internal.SentryError(err)  
+        return nil, false  
+    }  
+      
+    svg, err := badgeWriter.RenderFlatBadge(flatBadge)  
+    if err != nil {  
+        // 只记录错误，返回失败标记  
+        internal.SentryError(err)  
+        return nil, false  
+    }  
+      
+    return svg, true
 }
 
 // 判断用户代理并获取操作系统和浏览器信息
@@ -2264,9 +2297,14 @@ func main() {
         if id == "svg" {
             // 如果id是svg，生成SVG图像并返回
             // 查询IP地址信息
-	    ipInfo := queryIP(clientIP)
-	    log.Printf("生成svg： %s", ipInfo)
-            svgContent := generateSVG(ipInfo)
+	    	ipInfo := queryIP(clientIP)
+	    	log.Printf("生成svg： %s", ipInfo)
+			
+            svgContent, success := generateSVG(ipInfo)
+			if !success {  
+        		return  // 失败时不响应  
+    		}
+			
             w.Header().Set("Content-Type", "image/svg+xml")
             w.Header().Set("Cache-Control", "no-cache")
             w.Write([]byte(svgContent))
@@ -2282,7 +2320,10 @@ func main() {
 	    osInfo, browserInfo := getUAInfo(userAgent) // 确保接收函数返回值
 	    UAInfo := osInfo + "/" + browserInfo
 	    log.Printf("查询UA： %s", UAInfo)
-            svgContent := generateUASVG(UAInfo)
+			svgContent, success := generateUASVG(UAInfo)
+			if !success {  
+        		return  // 失败时不响应  
+    		}
             w.Header().Set("Content-Type", "image/svg+xml")
             w.Header().Set("Cache-Control", "no-cache")
             w.Write([]byte(svgContent))
