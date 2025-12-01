@@ -5,6 +5,7 @@ go 1.21.5
 require (
 	github.com/natefinch/lumberjack v2.0.0+incompatible
 	github.com/zu1k/nali v0.8.1
+	github.com/lmq8267/go-counter-badge v1.2.4
 )
 
 require (
