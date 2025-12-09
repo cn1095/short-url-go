@@ -1802,7 +1802,7 @@ func renderAdminPage(w http.ResponseWriter, r *http.Request, data []ApiRequest) 
       
     		// 切换排序顺序并更新箭头  
     		sortOrder = sortOrder === 'asc' ? 'desc' : 'asc';  
-    		document.getElementById("sortArrow").innerText = sortOrder === 'asc' ? '↑' : '↓';  
+    		document.getElementById("sortArrow").innerText = sortOrder === 'asc' ? '↓' : '↑';  
       
     		// 重新应用分页  
     		updateTablePagination();  
